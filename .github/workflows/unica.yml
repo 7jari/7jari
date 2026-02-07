@@ -1,6 +1,6 @@
-# This is a basic workflow to try to build https://github.com/salvogiangri/UN1CA under Github Actions
+# This is a basic workflow to try to build https://github.com/salvogiangri/UN1CA under GitHub Actions
 
-name: "unica.yml - A attempt to build UN1CA under Github Actions"
+name: "Build UN1CA under GitHub Actions"
 
 on:
   workflow_dispatch:
@@ -87,12 +87,9 @@ jobs:
             echo "Ok, now copying to new out directory"
             cp UN1CA/out/*.zip out
 
-        - name: "To Github Artifact"
-          uses: actions/upload-artifact@v4
-          with:
-            name: "Test-${{github.run_id}}-artifacts"
-            path: |
-              out/*.zip
+        - name: "To Pixeldrain"
+          run: |
+            curl -T "$(ls out/*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Notify Telegram Channel"
           if: ${{ github.event.inputs.notify_telegram_channel == 'true' }}
