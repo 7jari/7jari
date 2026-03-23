@@ -25,7 +25,7 @@ jobs:
 
         - name: "Pull ROM from specified URL"
           run: |
-            wget -nv -O ${{ github.event.inputs.filename }} "${{ github.event.inputs.url }}"
+            wget -O ${{ github.event.inputs.filename }} '${{ github.event.inputs.url }}'
 
         - name: "Mirror To Pixeldrain"
           run: |
