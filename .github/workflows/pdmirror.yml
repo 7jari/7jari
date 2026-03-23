@@ -7,6 +7,10 @@ on:
         description: "ROM download link"
         required: true
         type: string
+      filename:
+        description: "ROM file name"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -21,8 +25,8 @@ jobs:
 
         - name: "Pull ROM from specified URL"
           run: |
-            wget -O rom.zip ${{ github.event.inputs.url }}
+            wget -O ${{ github.event.inputs.filename }}.zip ${{ github.event.inputs.url }}
 
         - name: "Mirror To Pixeldrain"
           run: |
-            curl -T rom.zip -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
+            curl -T ${{ github.event.inputs.filename }}.zip -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
