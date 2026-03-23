@@ -21,12 +21,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
         - name: "Checkout"
-          uses: actions/checkout@v2
+          uses: actions/checkout@v6
 
         - name: "Pull ROM from specified URL"
           run: |
-            wget -O ${{ github.event.inputs.filename }}.zip ${{ github.event.inputs.url }}
+            wget -nv -O ${{ github.event.inputs.filename }} ${{ github.event.inputs.url }}
 
         - name: "Mirror To Pixeldrain"
           run: |
-            curl -T ${{ github.event.inputs.filename }}.zip -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
+            curl -T ${{ github.event.inputs.filename }} -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
