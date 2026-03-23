@@ -1,0 +1,28 @@
+name: "Mirror DA BOMB ROM"
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "ROM download link"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: "Mirror DA BOMB ROM"
+    runs-on: ubuntu-24.04
+    steps:
+        - name: "Checkout"
+          uses: actions/checkout@v2
+
+        - name: "Pull ROM from specified URL"
+          run: |
+            wget -O rom.zip ${{ github.event.inputs.url }}
+
+        - name: "Mirror To Pixeldrain"
+          run: |
+            curl -T rom.zip -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
