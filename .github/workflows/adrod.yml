@@ -14,7 +14,7 @@ jobs:
         - name: "Checkout"
           uses: actions/checkout@v6
           
-        - name: "Free disk space (1/3)"
+        - name: "Free disk space"
           uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
           with:
             remove_android: true
@@ -28,16 +28,6 @@ jobs:
             rm_cmd: "rmz"  # Use 'rmz' for faster deletion (default: 'rm')
             rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
             testing: false
-
-        - name: "Free disk space (2/3)"
-          uses: jlumbroso/free-disk-space@main
-          with:
-            tool-cache: true
-
-        - name: "Free disk space (3/3)"
-          uses: rokibhasansagar/slimhub_actions@main
-          with:
-            retain: 'compiler_cmake'
 
         - name: "Set up dependencies"
           run: |
@@ -58,7 +48,7 @@ jobs:
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd ./adrodsrc
             repo init -u https://github.com/PixelExperience-LEGACY-edition/manifest.git -b thirteen-plus --depth=1 --git-lfs
-            repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
+            repo sync -c -j3 --force-sync --no-clone-bundle --no-tags
 
         - name: "Check disk space"
           run: |
