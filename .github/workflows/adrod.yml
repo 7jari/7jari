@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    name: "Build UN1CA"
+    name: "Build Adrod"
     runs-on: ubuntu-22.04
     steps:
         - name: "Checkout"
@@ -53,6 +53,7 @@ jobs:
             mkdir ./adrodsrc
             curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
             chmod a+x ~/bin/repo
+            export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             repo init -u https://github.com/PixelExperience-LEGACY-edition/manifest.git -b thirteen-plus --depth=1 --git-lfs
