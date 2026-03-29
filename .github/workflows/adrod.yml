@@ -56,6 +56,7 @@ jobs:
             export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            cd ./adrodsrc
             repo init -u https://github.com/PixelExperience-LEGACY-edition/manifest.git -b thirteen-plus --depth=1 --git-lfs
             repo sync -c -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
