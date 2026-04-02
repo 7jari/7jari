@@ -13,7 +13,7 @@ jobs:
     steps:
         - name: "Checkout"
           uses: actions/checkout@v6
-          
+
         - name: "Free disk space"
           uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
           with:
@@ -21,7 +21,7 @@ jobs:
             remove_dotnet: true
             remove_haskell: true
             remove_tool_cache: true
-            remove_swap: true
+            remove_swap: false
             remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
             remove_packages_one_command: true
             remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
@@ -47,9 +47,14 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd ./adrodsrc
-            repo init -u https://github.com/PixelExperience-LEGACY-edition/manifest.git -b thirteen-plus --depth=1 --git-lfs
-            repo sync -c -j3 --force-sync --no-clone-bundle --no-tags
+            repo init -u https://github.com/LineageOS/android.git -b lineage-18.1 --depth=1 --git-lfs --no-clone-bundle
+            curl -o .repo/local_manifests/local_manifests.xml https://raw.githubusercontent.com/Redmi-MT6768/local_manifests/master/eleven.xml --create-dirs
+            repo sync -j3
 
-        - name: "Check disk space"
+        - name: "Build adrod!"
           run: |
             df -h /
+            cd ./adrodsrc
+            source build/envsetup.sh
+            lunch lineage_merlinx-userdebug
+            m bacon
