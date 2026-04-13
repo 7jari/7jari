@@ -89,7 +89,7 @@ jobs:
 
         - name: "To Pixeldrain"
           run: |
-            curl -T "$(ls out/*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
+            curl -T "$(ls out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Notify Telegram Channel"
           if: ${{ github.event.inputs.notify_telegram_channel == 'true' }}
