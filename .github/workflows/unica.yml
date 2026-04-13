@@ -76,20 +76,10 @@ jobs:
             source buildenv.sh ${{ github.event.inputs.device }}
             fi
             run_cmd make_rom --build-rom-zip
-            cd ..
-          continue-on-error: true
 
-        - name: "Pull Finished ROM"
+        - name: "Upload ROM to Pixeldrain"
           run: |
-            mkdir out
-            echo "Checking out directory"
-            ls UN1CA/out
-            echo "Ok, now copying to new out directory"
-            cp UN1CA/out/*.zip out
-
-        - name: "To Pixeldrain"
-          run: |
-            curl -T "$(ls out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
+            curl -T "$(ls UN1CA/out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Notify Telegram Channel"
           if: ${{ github.event.inputs.notify_telegram_channel == 'true' }}
