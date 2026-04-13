@@ -75,7 +75,7 @@ jobs:
             else
             source buildenv.sh ${{ github.event.inputs.device }}
             fi
-            run_cmd make_rom
+            run_cmd make_rom --build-rom-zip
             cd ..
           continue-on-error: true
 
