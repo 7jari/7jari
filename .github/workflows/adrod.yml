@@ -64,6 +64,7 @@ jobs:
         - name: "Build adrod!"
           run: |
             cd ./adrodsrc
+            export USE_CCACHE=0
             source build/envsetup.sh
             lunch aosp_a05s-userdebug
-            mka recoveryimage -j4
+            mka recoveryimage -j6
