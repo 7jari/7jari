@@ -45,7 +45,6 @@ jobs:
             sudo zramctl /dev/zram0 -s $mem
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
-          continue-on-error: true
 
         - name: "Set up adrod repo"
           run: |
@@ -57,9 +56,9 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd ./adrodsrc
-            repo init -u https://github.com/PixelExperience-LEGACY-edition/manifest.git -b thirteen-plus --depth=1 --git-lfs
+            repo init -u https://github.com/7jari/pe_manifest.git -b thirteen-plus --depth=1 --git-lfs --no-clone-bundle
             git clone --depth=1 https://github.com/7jari/local_manifests_a05s.git .repo/local_manifests
-            repo sync -c -j8 --force-sync --no-clone-bundle --no-tags
+            repo sync -j8
 
         - name: "Build adrod!"
           run: |
