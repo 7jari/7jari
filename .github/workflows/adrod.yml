@@ -64,6 +64,7 @@ jobs:
           run: |
             rm -rf ~/.ccache
             cd ./adrodsrc
+            export ALLOW_MISSING_DEPENDENCIES=true
             source build/envsetup.sh
             lunch aosp_a05s-userdebug
             mka recoveryimage -j8
