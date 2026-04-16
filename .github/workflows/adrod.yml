@@ -42,9 +42,11 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 2 * 1024))
+            sleep 5
             sudo zramctl /dev/zram0 -s $mem
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
+          continue-on-error: true
 
         - name: "Set up adrod repo"
           run: |
@@ -62,8 +64,8 @@ jobs:
 
         - name: "Build adrod!"
           run: |
-            rm -rf ~/.ccache
             cd ./adrodsrc
+            export CCACHE_DISABLE=1
             export ALLOW_MISSING_DEPENDENCIES=true
             source build/envsetup.sh
             lunch aosp_a05s-userdebug
