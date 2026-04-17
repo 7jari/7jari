@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       local_branch:
-        description: "Personal local manifest's branch"
+        description: "Personal local manifest's branch (required for repository cloning)"
         required: false
         type: string
       device_name:
@@ -119,4 +119,4 @@ jobs:
             export ALLOW_MISSING_DEPENDENCIES=true
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
-            ${{ github.event.inputs.build_command }} -j8
+            ${{ github.event.inputs.build_command }} -j12
