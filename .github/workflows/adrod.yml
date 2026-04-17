@@ -52,7 +52,7 @@ jobs:
         - name: "Checkout"
           uses: actions/checkout@v6
 
-        - name: "Free disk space"
+        - name: "Free disk space (1/2)"
           uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
           with:
             remove_android: true
@@ -67,6 +67,11 @@ jobs:
             rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
             testing: false
 
+        - name: "Free disk space (2/2)"
+          run: |
+            sudo docker image prune --all --force
+            sudo docker builder prune -a
+
         - name: "Set up dependencies"
           run: |
             sudo apt update
@@ -75,16 +80,15 @@ jobs:
               bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev \
               lz4 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev lib32ncurses5-dev libncurses5 libncurses5-dev linux-modules-extra-$(uname -r)
 
-        - name: "zram bomb"
+        - name: "Set up zram"
           run: |
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 3 * 1024))
-            sleep 2
+            sleep 3
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
-          continue-on-error: true
 
         - name: "Set up adrod repo"
           run: |
@@ -102,7 +106,7 @@ jobs:
             else
               curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
-            repo sync -j8 --force-sync
+            repo sync -j8
 
         - name: "Display remaining disk space"
           run: |
