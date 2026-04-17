@@ -80,7 +80,7 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 3 * 1024))
-            sleep 5
+            sleep 2
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
@@ -103,6 +103,10 @@ jobs:
               curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
             repo sync -j8 --force-sync
+
+        - name: "Display remaining disk space"
+          run: |
+            df -h /
 
         - name: "Build adrod!"
           run: |
