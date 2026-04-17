@@ -1,7 +1,45 @@
-name: "Adrod Builder Thingy"
+name: "Android Buildbotting Final Boss"
 
 on:
   workflow_dispatch:
+    inputs:
+      repo_manifest:
+        description: "Repo manifest"
+        required: true
+        type: string
+      repo_branch:
+        description: "Repo manifest's branch"
+        required: true
+        type: string
+      local_manifest:
+        description: "Personal local manifest [repository or raw]"
+        required: true
+        type: string
+      local_branch:
+        description: "Personal local manifest's branch"
+        required: false
+        type: string
+      device_name:
+        description: "Device's codename"
+        required: true
+        type: string
+      product_name:
+        description: "Product to build"
+        required: true
+        type: string
+      build_command:
+        description: 'Command to be used for compiling'
+        required: true
+        default: 'mka bacon'
+      build_type:
+        description: 'Type of build'
+        required: true
+        default: 'userdebug'
+        type: choice
+        options: 
+        - 'eng'
+        - 'userdebug'
+        - 'user'
 
 permissions:
   contents: write
@@ -41,9 +79,9 @@ jobs:
           run: |
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
-            mem=$((totalmem * 2 * 1024))
+            mem=$((totalmem * 3 * 1024))
             sleep 5
-            sudo zramctl /dev/zram0 -s $mem
+            sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
           continue-on-error: true
@@ -58,9 +96,13 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd ./adrodsrc
-            repo init -u https://github.com/7jari/pe_manifest.git -b thirteen-plus --depth=1 --git-lfs --no-clone-bundle
-            git clone --depth=1 https://github.com/7jari/local_manifests_a05s.git .repo/local_manifests
-            repo sync -j8
+            repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
+            if [ ! -z ${{ github.event.inputs.local_branch }} ]; then
+              git clone --depth=1 ${{ github.event.inputs.local_manifest }} -b ${{ github.event.inputs.local_branch }} .repo/local_manifests
+            else
+              curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
+            fi
+            repo sync -j8 --force-sync
 
         - name: "Build adrod!"
           run: |
@@ -68,5 +110,5 @@ jobs:
             export CCACHE_DISABLE=1
             export ALLOW_MISSING_DEPENDENCIES=true
             source build/envsetup.sh
-            lunch aosp_a05s-userdebug
-            mka recoveryimage -j8
+            lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
+            ${{ github.event.inputs.build_command }} -j8
