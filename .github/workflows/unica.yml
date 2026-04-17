@@ -17,8 +17,8 @@ on:
         required: true
         default: false
         type: boolean
-      notify_telegram_channel:
-        description: "Notify the Telegram Channel (Make sure you set up the secrets with variable named: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)"
+      pixeldrain:
+        description: "Upload to Pixeldrain (make sure you set up the secrets variable with name PIXELDRAIN_API_KEY)"
         required: true
         default: false
         type: boolean
@@ -78,17 +78,13 @@ jobs:
             run_cmd make_rom --build-rom-zip
 
         - name: "Upload ROM to Pixeldrain"
+          if: ${{ github.event.inputs.pixeldrain == 'true' }}
           run: |
             curl -T "$(ls UN1CA/out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
-        - name: "Notify Telegram Channel"
-          if: ${{ github.event.inputs.notify_telegram_channel == 'true' }}
-          uses: appleboy/telegram-action@master
+        - name: "Upload ROM to GoFile"
+          if: ${{ github.event.inputs.pixeldrain == 'false' }}
+          uses: toiletpuppy/gofile@New
           with:
-            to: ${{ secrets.TELEGRAM_CHAT_ID }}
-            token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-            message: |
-              Bomb Build Completed
-              Action ID: ${{ github.run_id }}
-              Device: ${{ github.event.inputs.device }}
+            files: "$(ls UN1CA/out/UN1CA*.zip)"
      
