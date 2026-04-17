@@ -40,6 +40,10 @@ on:
         - 'eng'
         - 'userdebug'
         - 'user'
+      microg:
+        description: 'Integrate microG (Linag only)'
+        required: false
+        type: boolean
 
 permissions:
   contents: write
@@ -117,6 +121,10 @@ jobs:
             cd ./adrodsrc
             export CCACHE_DISABLE=1
             export ALLOW_MISSING_DEPENDENCIES=true
+            if [ ${{ github.event.inputs.microg }} = true ]; then
+              git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
+              export WITH_GMS=true
+            fi
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }} -j12
