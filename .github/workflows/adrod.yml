@@ -137,4 +137,4 @@ jobs:
           uses: actions/upload-artifact@v7
           with:
             name: "${{ github.event.inputs.product_name }}-${{github.run_id}}-artifacts"
-            path: out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artifact }}
+            path: adrodsrc/out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artifact }}
