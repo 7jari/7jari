@@ -127,4 +127,4 @@ jobs:
             fi
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
-            ${{ github.event.inputs.build_command }} -j12
+            ${{ github.event.inputs.build_command }} -j16
