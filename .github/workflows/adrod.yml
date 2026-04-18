@@ -44,6 +44,10 @@ on:
         description: 'Integrate microG (Linag only)'
         required: false
         type: boolean
+      artifact:
+        description: 'Output file to upload'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -128,3 +132,9 @@ jobs:
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }} -j16
+
+        - name: "To GitHub Artifacts"
+          uses: actions/upload-artifact@v7
+          with:
+            name: "${{ github.event.inputs.product_name }}-${{github.run_id}}-artifacts"
+            path: out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artifact }}
