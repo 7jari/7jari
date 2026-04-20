@@ -48,6 +48,10 @@ on:
         description: 'Output file to upload'
         required: true
         type: string
+      missing:
+        description: 'Allow missing dependencies'
+        required: true
+        type: boolean
 
 permissions:
   contents: write
@@ -88,7 +92,7 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 3 * 1024))
-            sleep 3
+            sleep 2
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
@@ -118,8 +122,9 @@ jobs:
         - name: "Build adrod!"
           run: |
             cd ./adrodsrc
-            export CCACHE_DISABLE=1
-            export ALLOW_MISSING_DEPENDENCIES=true
+            if [ ${{ github.event.inputs.missing }} = true ]; then
+              export ALLOW_MISSING_DEPENDENCIES=true
+            fi
             if [ ${{ github.event.inputs.microg }} = true ]; then
               git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
               export WITH_GMS=true
