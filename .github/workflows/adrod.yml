@@ -27,10 +27,6 @@ on:
         description: "Product to build"
         required: true
         type: string
-      build_command:
-        description: 'Command to be used for compiling'
-        required: true
-        default: 'mka bacon'
       build_type:
         description: 'Type of build'
         required: true
@@ -40,18 +36,6 @@ on:
         - 'eng'
         - 'userdebug'
         - 'user'
-      microg:
-        description: 'Integrate microG (Linag only)'
-        required: false
-        type: boolean
-      artifact:
-        description: 'Output file to upload'
-        required: true
-        type: string
-      missing:
-        description: 'Allow missing dependencies'
-        required: true
-        type: boolean
 
 permissions:
   contents: write
@@ -92,7 +76,7 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 3 * 1024))
-            sleep 2
+            sleep 1
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
@@ -119,22 +103,32 @@ jobs:
           run: |
             df -h /
 
-        - name: "Build adrod!"
+        - name: "Analyse adrod!"
           run: |
             cd ./adrodsrc
-            if [ ${{ github.event.inputs.missing }} = true ]; then
-              export ALLOW_MISSING_DEPENDENCIES=true
-            fi
-            if [ ${{ github.event.inputs.microg }} = true ]; then
-              git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
-              export WITH_GMS=true
-            fi
+            MEMORY_LOG_FILE="memory_use.log"
+            DEVICE="zram0"
+            get_total_memory_use(){
+                free | awk '/^Mem:/ {ram_used=$3} /^Swap:/ {swap_used=$3; total_used=(ram_used + swap_used) / 1024; print total_used}'
+            }
+            monitor_memory() {
+                while true; do
+                    get_total_memory_use >> "$MEMORY_LOG_FILE"
+                    sleep 1
+                done
+            }
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
-            ${{ github.event.inputs.build_command }} -j8
-
-        - name: "To GitHub Artifacts"
-          uses: actions/upload-artifact@v7
-          with:
-            name: "${{ github.event.inputs.product_name }}-${{github.run_id}}-artifacts"
-            path: adrodsrc/out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artifact }}
+            monitor_memory &
+            MONITOR_PID=$!
+            echo $(date '+%Y-%m-%d %H:%M:%S'): Starting benchmark
+            initial_write=$(iostat -m | awk -v dev="$DEVICE" '$1 == dev {print $6}')
+            m nothing -j8
+            kill "$MONITOR_PID"
+            wait "$MONITOR_PID" 2>/dev/null
+            current_write=$(iostat -m | awk -v dev="$DEVICE" '$1 == dev {print $6}')
+            write_mb=$((current_write - initial_write))
+            max_mem_used=$(awk 'NR==1 {max=$1} $1>max {max=$1} END {print max}' "$MEMORY_LOG_FILE")
+            echo "Maximum memory usage during build (RAM + Swap): ${max_mem_used} MB"
+            echo "Total MB Written to $DEVICE: $write_mb MB"
+            echo "$(date '+%Y-%m-%d %H:%M:%S'): End of benchmark\n"
