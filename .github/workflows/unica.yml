@@ -83,7 +83,6 @@ jobs:
             curl -T "$(ls UN1CA/out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Upload ROM to GoFile"
-          if: ${{ github.event.inputs.pixeldrain == 'false' }}
           uses: toiletpuppy/gofile@New
           with:
             files: "$(ls UN1CA/out/UN1CA*.zip)"
