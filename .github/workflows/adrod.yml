@@ -74,7 +74,7 @@ jobs:
             remove_swap: true
             remove_packages: "mercurial powershell"
             remove_packages_one_command: true
-            remove_folders: "/usr/share/az* /usr/local/lib/node_modules /usr/local/share/powershell /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
+            remove_folders: "/usr/share/az* /usr/local/lib/node_modules /usr/local/share/powershell /usr/local/aws-cli /usr/local/aws-sam-cli"
             rm_cmd: "rmz"  # Use 'rmz' for faster deletion (default: 'rm')
             rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
             testing: false
@@ -89,15 +89,12 @@ jobs:
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2_amd64.deb && sudo dpkg -i libtinfo5_6.3-2_amd64.deb && rm -f libtinfo5_6.3-2_amd64.deb
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libncurses5_6.3-2_amd64.deb && sudo dpkg -i libncurses5_6.3-2_amd64.deb && rm -f libncurses5_6.3-2_amd64.deb
 
-        - name: "Set up zram"
-          run: |
-            sudo modprobe zram
-            totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
-            mem=$((totalmem * 3 * 1024))
-            sleep 2
-            sudo zramctl /dev/zram0 -s $mem -a lz4
-            sudo mkswap /dev/zram0
-            sudo swapon -p 100 /dev/zram0
+        - name: "Set up swap"
+          uses: thejerrybao/setup-swap-space@v1
+          with:
+            swap-space-path: /swapfile
+            swap-size-gb: 16
+            remove-existing-swap-files: true
 
         - name: "Set up adrod repo"
           run: |
