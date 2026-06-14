@@ -9,10 +9,7 @@ on:
         description: "Select a device"
         required: true
         default: "a05s"
-        type: choice
-        options:
-          - "a05s"
-          - "a05m"
+        type: string
       debug_build:
         description: "Debug build"
         required: true
@@ -63,11 +60,7 @@ jobs:
 
         - name: "Clone forked repo"
           run: |
-            if [[ "${{ github.event.inputs.device }}" = "a05s" ]]; then
-            git clone --recurse-submodules -b a05s --single-branch https://github.com/furbanoramos21-testing/UN1CA UN1CA
-            elif [[ "${{ github.event.inputs.device }}" = "a05m" ]]; then
-            git clone --recurse-submodules -b a05m --single-branch https://github.com/7jari/UN1CA UN1CA
-            fi
+            git clone --recurse-submodules -b ${{ github.event.inputs.device }} --single-branch https://github.com/7jari/UN1CA UN1CA
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
