@@ -5,6 +5,14 @@ name: "Build UN1CA under GitHub Actions"
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo path"
+        required: true
+        type: string
+      branch:
+        description: "Branch name"
+        required: true
+        type: string
       device:
         description: "Device codename"
         required: true
@@ -20,6 +28,10 @@ on:
         required: true
         default: false
         type: boolean
+      file:
+        description: "File name"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -60,7 +72,7 @@ jobs:
 
         - name: "Clone forked repo"
           run: |
-            git clone --recurse-submodules -b ${{ github.event.inputs.device }} --single-branch https://github.com/furbanoramos21-testing/UN1CA UN1CA
+            git clone --recurse-submodules -b ${{ github.event.inputs.branch }} --single-branch https://github.com/${{ github.event.inputs.repo }} UN1CA
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -78,11 +90,11 @@ jobs:
         - name: "Upload ROM to Pixeldrain"
           if: ${{ github.event.inputs.pixeldrain == 'true' }}
           run: |
-            curl -T "$(ls UN1CA/out/UN1CA*.zip)" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
+            curl -T "$(ls UN1CA/out/${{ github.event.inputs.file }})" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Upload ROM to GoFile"
           if: ${{ github.event.inputs.pixeldrain != 'true' }}
           uses: 7jari/gofile-upload@v1
           with:
-            files: "UN1CA/out/UN1CA*.zip"
+            files: "UN1CA/out/${{ github.event.inputs.file }}"
      
