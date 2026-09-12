@@ -28,9 +28,14 @@ on:
         required: true
         default: false
         type: boolean
+      gofile:
+        description: "Upload to GoFile"
+        required: true
+        default: false
+        type: boolean
       file:
         description: "File name"
-        required: true
+        required: false
         type: string
 
 permissions:
@@ -93,7 +98,7 @@ jobs:
             curl -T "$(ls UN1CA/out/${{ github.event.inputs.file }})" -u :${{ secrets.PIXELDRAIN_API_KEY }} https://pixeldrain.com/api/file/
 
         - name: "Upload ROM to GoFile"
-          if: ${{ github.event.inputs.pixeldrain != 'true' }}
+          if: ${{ github.event.inputs.gofile == 'true' }}
           uses: 7jari/gofile-upload@v2
           with:
             files: "UN1CA/out/${{ github.event.inputs.file }}"
