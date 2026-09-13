@@ -16,7 +16,10 @@ on:
       device:
         description: "Device codename"
         required: true
-        default: "a05s"
+        type: string
+      file:
+        description: "File name"
+        required: false
         type: string
       debug_build:
         description: "Debug build"
@@ -24,7 +27,7 @@ on:
         default: false
         type: boolean
       pixeldrain:
-        description: "Upload to Pixeldrain (make sure you set up the secrets variable with name PIXELDRAIN_API_KEY)"
+        description: "Upload to Pixeldrain (uses PIXELDRAIN_API_KEY secret)"
         required: true
         default: false
         type: boolean
@@ -33,10 +36,6 @@ on:
         required: true
         default: false
         type: boolean
-      file:
-        description: "File name"
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -77,20 +76,25 @@ jobs:
 
         - name: "Clone forked repo"
           run: |
-            git clone --recurse-submodules -b ${{ github.event.inputs.branch }} --single-branch https://github.com/${{ github.event.inputs.repo }} UN1CA
+            gh repo clone ${{ github.event.inputs.repo }} UN1CA -- --recurse-submodules -b ${{ github.event.inputs.branch }} --single-branch
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch upstream --tags || true
 
         - name: "Build it!"
           run: |
             export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
             cd UN1CA
-            if [[ "${{ github.event.inputs.debug_build }}" = "true" ]]; then
+            if [[ "${{ github.event.inputs.debug_build }}" == "true" ]]; then
             source buildenv.sh --debug ${{ github.event.inputs.device }}
             else
             source buildenv.sh ${{ github.event.inputs.device }}
             fi
+            if [ "${{ github.event.inputs.file }}" ]; then
             run_cmd make_rom --build-rom-zip
+            else
+            run_cmd make_rom
+            fi
 
         - name: "Upload ROM to Pixeldrain"
           if: ${{ github.event.inputs.pixeldrain == 'true' }}
