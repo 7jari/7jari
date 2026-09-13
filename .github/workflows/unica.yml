@@ -79,7 +79,7 @@ jobs:
             gh repo clone ${{ github.event.inputs.repo }} UN1CA -- --recurse-submodules -b ${{ github.event.inputs.branch }} --single-branch
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git fetch upstream --tags || true
+            cd UN1CA; git fetch upstream --tags || true
 
         - name: "Build it!"
           run: |
