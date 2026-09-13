@@ -80,6 +80,8 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd UN1CA; git fetch upstream --tags || true
+          env:
+            GH_TOKEN: ${{ github.token }}
 
         - name: "Build it!"
           run: |
