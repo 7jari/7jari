@@ -13,7 +13,7 @@ on:
         type: string
       local_manifest:
         description: "Personal local manifest [repository or raw]"
-        required: true
+        required: false
         type: string
       local_branch:
         description: "Personal local manifest's branch (required for repository cloning)"
