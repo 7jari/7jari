@@ -110,10 +110,12 @@ jobs:
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
             cd ./adrodsrc
             repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
+            if [ -n "${{ github.event.inputs.local_manifest }}" ]; then
             if [ -n "${{ github.event.inputs.local_branch }}" ]; then
-              git clone --depth=1 ${{ github.event.inputs.local_manifest }} -b ${{ github.event.inputs.local_branch }} .repo/local_manifests
+            git clone --depth=1 ${{ github.event.inputs.local_manifest }} -b ${{ github.event.inputs.local_branch }} .repo/local_manifests
             else
-              curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
+            curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
+            fi
             fi
             repo sync -c -j8
 
