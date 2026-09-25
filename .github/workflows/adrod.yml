@@ -45,13 +45,17 @@ on:
         required: false
         type: boolean
       artifact:
-        description: 'Output file to upload'
+        description: 'Upload artifact'
         required: true
-        type: string
+        type: boolean
       missing:
         description: 'Allow missing dependencies'
         required: true
         type: boolean
+      artiname:
+        description: 'Artifact name'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -111,7 +115,7 @@ jobs:
             else
               curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
-            repo sync -j8
+            repo sync -c -j8
 
         - name: "Display remaining disk space"
           run: |
@@ -133,7 +137,8 @@ jobs:
             ${{ github.event.inputs.build_command }} -j8
 
         - name: "To GitHub Artifacts"
+          if: ${{ github.event.inputs.artifact == 'true' }}
           uses: actions/upload-artifact@v7
           with:
             name: "${{ github.event.inputs.product_name }}-${{github.run_id}}-artifacts"
-            path: adrodsrc/out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artifact }}
+            path: adrodsrc/out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artiname }}
