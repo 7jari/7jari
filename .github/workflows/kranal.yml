@@ -42,7 +42,7 @@ jobs:
         sudo apt install -yq automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
           libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev \
           pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses-dev libx11-dev \
-          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves linux-modules-extra-$(uname -r)
+          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves clang llvm lld linux-modules-extra-$(uname -r)
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
     - name: "Set up zram"
@@ -56,6 +56,7 @@ jobs:
         sudo swapon -p 100 /dev/zram0
 
     - name: Download AOSP Clang
+      continue-on-error: true
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
         wget -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-17.0.0_r1/clang-r596125.tar.gz
