@@ -1,0 +1,126 @@
+name: Kranal Bilder
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release"
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    name: Bild kranal
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out
+      uses: actions/checkout@v6
+
+    - name: "Free disk space"
+      uses: endersonmenezes/free-disk-space@v3
+      with:
+        remove_android: true
+        remove_dotnet: true
+        remove_haskell: true
+        remove_tool_cache: true
+        remove_swap: true
+        remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-* clang* apache2* php* gfortran* nginx* docker*"
+        remove_packages_one_command: true
+        remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle /usr/local/lib/lein /usr/share/java/selenium-server.jar"
+        rm_cmd: "rmz"
+        rmz_version: "3.1.1"
+        testing: false
+ 
+    - name: Set up dependencies
+      run: |
+        echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%Y%m%d-%H%M%S")" >> $GITHUB_ENV
+        sudo apt update
+        sudo apt install -yq automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
+          libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev \
+          pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses-dev libx11-dev \
+          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves crossbuild-essential-arm64 clang llvm lld \
+          linux-modules-extra-$(uname -r)
+        mkdir -p $GITHUB_WORKSPACE/kernel_workspace
+
+    - name: "Set up zram"
+      run: |
+        sudo modprobe zram
+        totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
+        mem=$((totalmem / 2 * 1024))
+        sleep 1
+        sudo zramctl /dev/zram0 -s $mem -a lz4
+        sudo mkswap /dev/zram0
+        sudo swapon -p 100 /dev/zram0
+        
+    - name: Download the kernel source code
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone https://github.com/samsung-sm6225-dev/android_kernel_samsung_a05s -b android13-5.15 android-kernel --depth=1
+
+    - name: Build kernel
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
+        export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang/bin:$PATH
+        export KBUILD_BUILD_HOST=AITARAK
+        export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+        make -j$(nproc --all) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- vendor/m269-gki_defconfig
+        make -j$(nproc --all) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 
+
+    - name: Check the kernel compilation results
+      run: |
+       cd $GITHUB_WORKSPACE/kernel_workspace
+       if [ -f android-kernel/out/arch/arm64/boot/Image ]; then
+           echo "CHECK_FILE_IS_OK=true" >> $GITHUB_ENV
+       else
+           echo "Kernel output file is empty or broken."
+           exit 1
+       fi
+  
+    - name: Setting up AnyKernel3
+      if: env.CHECK_FILE_IS_OK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace
+        git clone https://github.com/osm0sis/AnyKernel3.git
+        sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
+        sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
+        sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
+        cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
+        cd ./AnyKernel3/
+        zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip"
+        if [ -f ./AnyKernel3.zip ]; then
+           echo "AK3_IS_OK=true" >> $GITHUB_ENV
+        else
+           echo "AnyKernel3 output file is empty or broken."
+           exit 1
+        fi
+
+    - name: Upload Image
+      if: env.CHECK_FILE_IS_OK == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: Image-a05s-${{ env.BUILD_TIME }}
+        path: kernel_workspace/android-kernel/out/arch/arm64/boot/Image
+        if-no-files-found: error
+
+    - name: Upload AnyKernel3
+      if: env.CHECK_FILE_IS_OK == 'true' && env.AK3_IS_OK == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: AnyKernel3-A13-5.15-a05s-${{ env.BUILD_TIME }}
+        path: kernel_workspace/AnyKernel3/AnyKernel3.zip
+        if-no-files-found: error
+
+    - name: Release
+      uses: softprops/action-gh-release@v3
+      if: github.event.inputs.release == 'true'
+      with:
+        name: kernel-a05s-${{ env.BUILD_TIME }}
+        tag_name: ${{ env.BUILD_TIME }}
+        draft: true
+        prerelease: false
+        working_directory: kernel_workspace
+        token: ${{ secrets.PAT }}
+        repository: samsung-sm6225-dev/android_kernel_samsung_a05s
+        files: |
+          android-kernel/out/arch/arm64/boot/Image
+          AnyKernel3/AnyKernel3.zip
