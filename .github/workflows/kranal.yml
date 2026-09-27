@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Bild kranal
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Check out
@@ -35,11 +35,11 @@ jobs:
       run: |
         echo "BUILD_TIME=$(TZ=Asia/Jakarta date "+%Y%m%d-%H%M%S")" >> $GITHUB_ENV
         sudo apt update
+        sudo apt upgrade -y
         sudo apt install -yq automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
           libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev \
           pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses-dev libx11-dev \
-          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves crossbuild-essential-arm64 clang llvm lld \
-          linux-modules-extra-$(uname -r)
+          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves clang llvm lld linux-modules-extra-$(uname -r)
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
     - name: "Set up zram"
@@ -63,8 +63,8 @@ jobs:
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang/bin:$PATH
         export KBUILD_BUILD_HOST=AITARAK
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
-        make -j$(nproc --all) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- vendor/m269-gki_defconfig
-        make -j$(nproc --all) O=out ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LLVM=1 
+        make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 vendor/m269-gki_defconfig
+        make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 
 
     - name: Check the kernel compilation results
       run: |
