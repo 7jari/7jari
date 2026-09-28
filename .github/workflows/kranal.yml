@@ -42,7 +42,7 @@ jobs:
         sudo apt install -yq automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
           libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev \
           pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses-dev libx11-dev \
-          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves clang llvm lld linux-modules-extra-$(uname -r)
+          lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves linux-modules-extra-$(uname -r)
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
     - name: "Set up zram"
@@ -59,7 +59,7 @@ jobs:
       continue-on-error: true
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        wget -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-17.0.0_r1/clang-r596125.tar.gz
+        while [ $? -ne 0 ]; do wget -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel/clang-r614150.tar.gz ; done
         mkdir clang
         tar -C clang/ -xvf clang.tar.gz
         rm -rf clang.tar.gz
@@ -92,13 +92,12 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/osm0sis/AnyKernel3.git
-        sed -i 's/do.devicecheck=1/do.devicecheck=0/g' AnyKernel3/anykernel.sh
-        sed -i 's!block=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;!block=auto;!g' AnyKernel3/anykernel.sh
-        sed -i 's/is_slot_device=0;/is_slot_device=auto;/g' AnyKernel3/anykernel.sh
+        git clone https://github.com/WildKernels/AnyKernel3.git -b gki-2.0 --depth=1
+        sed -i "s/kernel\.string=.*/kernel\.string=AitarakKernel by Tjari/" AnyKernel3/anykernel.sh
+        sed -i "/ui_print/d" AnyKernel3/anykernel.sh
         cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
         cd ./AnyKernel3/
-        zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip"
+        zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip" -x "banner"
         if [ -f ./AnyKernel3.zip ]; then
            echo "AK3_IS_OK=true" >> $GITHUB_ENV
         else
@@ -118,7 +117,7 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true' && env.AK3_IS_OK == 'true'
       uses: actions/upload-artifact@v7
       with:
-        name: AnyKernel3-A13-5.15-a05s-${{ env.BUILD_TIME }}
+        name: AnyKernel3-a05s-${{ env.BUILD_TIME }}
         path: kernel_workspace/AnyKernel3/AnyKernel3.zip
         if-no-files-found: error
 
