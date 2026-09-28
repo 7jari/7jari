@@ -49,7 +49,7 @@ jobs:
       run: |
         sudo modprobe zram
         totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
-        mem=$((totalmem / 2 * 1024))
+        mem=$((totalmem * 2 * 1024))
         sleep 1
         sudo zramctl /dev/zram0 -s $mem -a lz4
         sudo mkswap /dev/zram0
