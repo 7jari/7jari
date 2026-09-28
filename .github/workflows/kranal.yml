@@ -93,8 +93,12 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/modules
-        zip kernel_modules.zip $(find -type f -name "*.ko")
-        if [ -f ./kernel_modules.zip ]; then
+        mkdir staging
+        cp -t staging/ $(find -type f -name "*.ko")
+        cd staging
+        rm zram.ko zsmalloc.ko || true
+        tar -czf modules.tar.gz *.ko
+        if [ -f ./modules.tar.gz ]; then
            echo "KMOD_IS_OK=true" >> $GITHUB_ENV
         else
            echo "Kernel modules output file is empty or broken."
@@ -105,10 +109,10 @@ jobs:
       if: env.CHECK_FILE_IS_OK == 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/WildKernels/AnyKernel3.git -b gki-2.0 --depth=1
-        sed -i "s/kernel\.string=.*/kernel\.string=AitarakKernel by Tjari/" AnyKernel3/anykernel.sh
-        sed -i "/ui_print/d" AnyKernel3/anykernel.sh
+        git clone https://github.com/7jari/AnyKernel3.git -b a05s --depth=1
         cp android-kernel/out/arch/arm64/boot/Image AnyKernel3/
+        mkdir -p AnyKernel3/vendor_ramdisk/lib/modules/
+        cp -t AnyKernel3/vendor_ramdisk/lib/modules/ modules/staging/*.ko
         cd ./AnyKernel3/
         zip -r AnyKernel3 . -x ".git*" -x "README.md" -x "*.zip" -x "banner"
         if [ -f ./AnyKernel3.zip ]; then
@@ -139,7 +143,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: modules-${{ env.BUILD_TIME }}
-        path: kernel_workspace/modules/kernel_modules.zip
+        path: kernel_workspace/modules/staging/modules.tar.gz
         if-no-files-found: error
 
     - name: Release
@@ -155,4 +159,4 @@ jobs:
         files: |
           android-kernel/out/arch/arm64/boot/Image
           AnyKernel3/AnyKernel3.zip
-          modules/kernel_modules.zip
+          modules/staging/modules.tar.gz
