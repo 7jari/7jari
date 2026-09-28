@@ -56,10 +56,11 @@ jobs:
         sudo swapon -p 100 /dev/zram0
 
     - name: Download AOSP Clang
-      continue-on-error: true
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        while [ $? -ne 0 ]; do wget -O clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel/clang-r614150.tar.gz ; done
+        CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel/clang-r614150.tar.gz"
+        wget -O clang.tar.gz "$CLANG_URL" || \
+            while [ $? -ne 0 ]; do wget -O clang.tar.gz "$CLANG_URL"; done
         mkdir clang
         tar -C clang/ -xvf clang.tar.gz
         rm -rf clang.tar.gz
@@ -76,7 +77,8 @@ jobs:
         export KBUILD_BUILD_HOST=AITARAK
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
         make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 vendor/m269-gki_defconfig
-        make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 
+        make -j$(nproc --all) O=out ARCH=arm64 LLVM=1
+        make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=$GITHUB_WORKSPACE/kernel_workspace/modules modules_install
 
     - name: Check the kernel compilation results
       run: |
@@ -87,6 +89,18 @@ jobs:
            echo "Kernel output file is empty or broken."
            exit 1
        fi
+  
+    - name: Package kernel modules
+      if: env.CHECK_FILE_IS_OK == 'true'
+      run: |
+        cd $GITHUB_WORKSPACE/kernel_workspace/modules
+        zip kernel_modules.zip $(find -type f -name "*.ko")
+        if [ -f ./kernel_modules.zip ]; then
+           echo "KMOD_IS_OK=true" >> $GITHUB_ENV
+        else
+           echo "Kernel modules output file is empty or broken."
+           exit 1
+        fi
   
     - name: Set up AnyKernel3
       if: env.CHECK_FILE_IS_OK == 'true'
@@ -121,11 +135,18 @@ jobs:
         path: kernel_workspace/AnyKernel3/AnyKernel3.zip
         if-no-files-found: error
 
+    - name: Upload kernel modules
+      if: env.CHECK_FILE_IS_OK == 'true' && env.KMOD_IS_OK == 'true'
+      uses: actions/upload-artifact@v7
+      with:
+        name: modules-${{ env.BUILD_TIME }}
+        path: kernel_workspace/modules/kernel_modules.zip
+        if-no-files-found: error
+
     - name: Release
       uses: softprops/action-gh-release@v3
       if: github.event.inputs.release == 'true'
       with:
-        name: kernel-a05s-${{ env.BUILD_TIME }}
         tag_name: ${{ env.BUILD_TIME }}
         draft: true
         prerelease: false
@@ -135,3 +156,4 @@ jobs:
         files: |
           android-kernel/out/arch/arm64/boot/Image
           AnyKernel3/AnyKernel3.zip
+          modules/kernel_modules.zip
