@@ -94,7 +94,7 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 3 * 1024))
-            sleep 2
+            sleep 1
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
@@ -136,9 +136,9 @@ jobs:
             fi
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
-            ${{ github.event.inputs.build_command }} -j8
+            ${{ github.event.inputs.build_command }} -j4
 
-        - name: "To GitHub Artifacts"
+        - name: "Upload to GitHub Artifacts"
           if: ${{ github.event.inputs.artifact == 'true' }}
           uses: actions/upload-artifact@v7
           with:
