@@ -113,6 +113,7 @@ jobs:
             truncate -s ${IMG_SIZE}K adrod.img
             mkfs.btrfs adrod.img
             sudo mount adrod.img ./adrodsrc -o defaults,noatime,compress-force=zstd,space_cache=v2,commit=120
+            sudo chown "$(id -un):$(id -gn)" ./adrodsrc
             cd ./adrodsrc
             repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
             if [ -n "${{ github.event.inputs.local_manifest }}" ]; then
