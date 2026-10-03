@@ -86,8 +86,9 @@ jobs:
           run: |
             sudo apt update
             DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
-              bc bison curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev \
+              bc bison btrfs-progs curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libgnutls28-dev \
               lz4 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev lib32ncurses5-dev libncurses5 libncurses5-dev linux-modules-extra-$(uname -r)
+            sudo modprobe btrfs  
 
         - name: "Set up zram"
           run: |
@@ -108,6 +109,10 @@ jobs:
             export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 102400))"
+            truncate -s ${IMG_SIZE}K adrod.img
+            mkfs.btrfs adrod.img
+            sudo mount adrod.img ./adrodsrc -o defaults,noatime,compress-force=zstd,space_cache=v2,commit=120
             cd ./adrodsrc
             repo init -u ${{ github.event.inputs.repo_manifest }} -b ${{ github.event.inputs.repo_branch }} --depth=1 --git-lfs --no-clone-bundle
             if [ -n "${{ github.event.inputs.local_manifest }}" ]; then
@@ -121,7 +126,7 @@ jobs:
 
         - name: "Display remaining disk space"
           run: |
-            df -h /
+            df -h "$GITHUB_WORKSPACE/adrodsrc"
 
         - name: "Build adrod!"
           timeout-minutes: 330
