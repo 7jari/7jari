@@ -42,15 +42,15 @@ on:
         - 'user'
       microg:
         description: 'Integrate microG (Linag only)'
-        required: false
-        type: boolean
-      artifact:
-        description: 'Upload artifact'
-        required: true
         type: boolean
       missing:
         description: 'Allow missing dependencies'
-        required: true
+        type: boolean
+      rbe:
+        description: 'Use RBE'
+        type: boolean
+      artifact:
+        description: 'Upload artifact'
         type: boolean
       artiname:
         description: 'Artifact name'
@@ -140,13 +140,14 @@ jobs:
           timeout-minutes: 330
           run: |
             cd ./adrodsrc
-            git clone --depth=1 https://github.com/Rares6567/new_rbe_fix tutorial
-            bash tutorial/scripts/build_patched_reclient.sh ./
-            patch -p1 < tutorial/patches/android-rbe-buildbuddyfix-defaults.patch
             if [ ${{ github.event.inputs.microg }} = true ]; then
-              git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
+            git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
             fi
             source build/envsetup.sh
+            if [ ${{ github.event.inputs.rbe }} = true ]; then
+            git clone --depth=1 https://github.com/7jari/new_rbe_fix tutorial
+            bash tutorial/scripts/build_patched_reclient.sh ./
+            patch -p1 < tutorial/patches/android-rbe-buildbuddyfix-defaults.patch
             export USE_RBE=1
             export RBE_DIR="$GITHUB_WORKSPACE/adrodsrc/prebuilts/remoteexecution-client/buildbuddyfix"
             export NINJA_REMOTE_NUM_JOBS=32
@@ -187,6 +188,7 @@ jobs:
             export RBE_remote_headers="x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}"
             export RBE_use_rpc_credentials=false
             export RBE_service_no_auth=true
+            fi
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }}
 
