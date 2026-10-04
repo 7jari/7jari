@@ -116,7 +116,7 @@ jobs:
             export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 102400))"
+            IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 2048000))"
             truncate -s ${IMG_SIZE}K adrod.img
             mkfs.btrfs adrod.img
             sudo mount adrod.img ./adrodsrc -o defaults,noatime,compress-force=zstd,space_cache=v2,commit=120
@@ -147,7 +147,11 @@ jobs:
             if [ ${{ github.event.inputs.rbe }} = true ]; then
             git clone --depth=1 https://github.com/7jari/new_rbe_fix tutorial
             bash tutorial/scripts/build_patched_reclient.sh ./
+            if grep -q "582efb38f0c229ea39952fff9e132ccbe183e14869b39888010dacf56b360d62" build/make/rbesetup.sh; then
+            patch -p1 < tutorial/patches/legacy-rbe-buildbuddyfix-defaults.patch
+            else
             patch -p1 < tutorial/patches/android-rbe-buildbuddyfix-defaults.patch
+            fi
             export USE_RBE=1
             export RBE_DIR="$GITHUB_WORKSPACE/adrodsrc/prebuilts/remoteexecution-client/buildbuddyfix"
             export NINJA_REMOTE_NUM_JOBS=32
