@@ -152,8 +152,7 @@ jobs:
             else
             patch -p1 < tutorial/patches/android-rbe-buildbuddyfix-defaults.patch
             fi
-            export USE_RBE=1
-            export RBE_DIR="$GITHUB_WORKSPACE/adrodsrc/prebuilts/remoteexecution-client/buildbuddyfix"
+            source build/make/rbesetup.sh
             export NINJA_REMOTE_NUM_JOBS=32
             export RBE_use_unified_downloads=true
             export RBE_use_unified_uploads=true
