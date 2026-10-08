@@ -75,17 +75,12 @@ jobs:
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
             echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
 
-        - name: "Free disk space (1/3)"
+        - name: "Free disk space (1/2)"
           run: |
             sudo docker image prune --all --force
             sudo docker builder prune -a
 
-        - name: "Free disk space (2/3)"
-          uses: jlumbroso/free-disk-space@main
-          with:
-            preinstalled-runtimes: true
-
-        - name: "Free disk space (3/3)"
+        - name: "Free disk space (2/2)"
           uses: rokibhasansagar/slimhub_actions@main
 
         - name: "Set up dependencies"
