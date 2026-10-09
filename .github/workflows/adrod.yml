@@ -47,7 +47,7 @@ on:
         description: 'Allow missing dependencies'
         type: boolean
       rbe:
-        description: 'Use RBE (Android 25Q2+)'
+        description: 'Use latest RBE client'
         type: boolean
       artifact:
         description: 'Upload artifact'
@@ -121,6 +121,14 @@ jobs:
             curl -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
             fi
+            [ -d "$PWD/.repo/local_manifests" ] || mkdir -p .repo/local_manifests
+            if [ ${{ github.event.inputs.microg }} = true ]; then
+            git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
+            fi
+            git clone --depth=1 https://github.com/7jari/new_rbe_fix rbefix
+            if [ ${{ github.event.inputs.rbe }} = true ]; then
+            cp rbefix/manifests/legacy-rbe.xml .repo/local_manifests/rbe.xml
+            fi
             repo sync -c -j8
 
         - name: "Display remaining disk space"
@@ -131,13 +139,12 @@ jobs:
           timeout-minutes: 330
           run: |
             cd ./adrodsrc
-            if [ ${{ github.event.inputs.microg }} = true ]; then
-            git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
+            bash rbefix/scripts/build_patched_reclient.sh ./
+            if grep -q "582efb38f0c229ea39952fff9e132ccbe183e14869b39888010dacf56b360d62" build/make/rbesetup.sh; then
+            patch -p1 < rbefix/patches/legacy-rbe-buildbuddyfix-defaults.patch
+            else
+            patch -p1 < rbefix/patches/android-rbe-buildbuddyfix-defaults.patch
             fi
-            if [ ${{ github.event.inputs.rbe }} = true ]; then
-            git clone --depth=1 https://github.com/Rares6567/new_rbe_fix tutorial
-            bash tutorial/scripts/build_patched_reclient.sh ./
-            patch -p1 < tutorial/patches/android-rbe-buildbuddyfix-defaults.patch
             export USE_RBE=true
             export NINJA_REMOTE_NUM_JOBS=32
             export RBE_use_unified_downloads=true
@@ -177,7 +184,6 @@ jobs:
             export RBE_remote_headers="x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }}"
             export RBE_use_rpc_credentials=false
             export RBE_service_no_auth=true
-            fi
             source build/envsetup.sh
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }}
