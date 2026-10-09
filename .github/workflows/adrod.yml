@@ -85,17 +85,17 @@ jobs:
             DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
               bc g++-multilib gcc-multilib gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev \
               libgnutls28-dev libsdl1.2-dev libssl-dev libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc linux-modules-extra-$(uname -r)
-            sudo modprobe btrfs  
 
         - name: "Set up zram"
           run: |
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
-            mem=$((totalmem * 3 * 1024))
+            mem=$((totalmem * 4 * 1024))
             sleep 1
-            sudo zramctl /dev/zram0 -s $mem
+            sudo zramctl /dev/zram0 -s $mem -a zstd
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
+            sudo sysctl vm.swappiness=200
 
         - name: "Set up adrod repo"
           run: |
@@ -106,6 +106,7 @@ jobs:
             export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            sudo modprobe btrfs
             IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 1024000))"
             truncate -s ${IMG_SIZE}K adrod.img
             mkfs.btrfs adrod.img
