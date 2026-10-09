@@ -75,12 +75,7 @@ jobs:
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
             echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
 
-        - name: "Free disk space (1/2)"
-          run: |
-            sudo docker image prune --all --force
-            sudo docker builder prune -a
-
-        - name: "Free disk space (2/2)"
+        - name: "Free disk space"
           uses: rokibhasansagar/slimhub_actions@main
 
         - name: "Set up dependencies"
@@ -111,7 +106,7 @@ jobs:
             export PATH="$HOME/bin:$PATH"
             git config --global user.name "github-actions[bot]"
             git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 1536000))"
+            IMG_SIZE="$(($(df -k --output=avail "$GITHUB_WORKSPACE" | tail -n 1) - 1024000))"
             truncate -s ${IMG_SIZE}K adrod.img
             mkfs.btrfs adrod.img
             sudo mount adrod.img ./adrodsrc -o defaults,noatime,compress-force=zstd,space_cache=v2,commit=120
