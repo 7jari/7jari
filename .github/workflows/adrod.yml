@@ -83,7 +83,7 @@ jobs:
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2_amd64.deb && sudo dpkg -i libtinfo5_6.3-2_amd64.deb && rm -f libtinfo5_6.3-2_amd64.deb
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libncurses5_6.3-2_amd64.deb && sudo dpkg -i libncurses5_6.3-2_amd64.deb && rm -f libncurses5_6.3-2_amd64.deb
             DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
-              bc g++-multilib gcc-multilib gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev \
+              bc g++-multilib gcc-multilib gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libyaml-dev \
               libgnutls28-dev libsdl1.2-dev libssl-dev libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc linux-modules-extra-$(uname -r)
 
         - name: "Set up zram"
@@ -146,7 +146,7 @@ jobs:
             patch -p1 < rbefix/patches/android-rbe-buildbuddyfix-defaults.patch
             fi
             export USE_RBE=true
-            export NINJA_REMOTE_NUM_JOBS=32
+            export NINJA_REMOTE_NUM_JOBS=40
             export RBE_use_unified_downloads=true
             export RBE_use_unified_uploads=true
             export RBE_R8_EXEC_STRATEGY=remote_local_fallback
