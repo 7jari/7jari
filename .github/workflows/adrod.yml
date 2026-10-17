@@ -209,6 +209,7 @@ jobs:
 
   publish:
     name: Publish release
+    needs: build
     runs-on: ubuntu-latest
     if: ${{ github.event.inputs.artifact == 'true' && github.event.inputs.release == 'true' }}
 
