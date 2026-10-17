@@ -56,6 +56,14 @@ on:
         description: 'Artifact name'
         required: false
         type: string
+      release:
+        description: 'Upload to GitHub Releases'
+        type: boolean
+        default: false
+      relrepo:
+        description: 'Releases repo'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -83,7 +91,7 @@ jobs:
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2_amd64.deb && sudo dpkg -i libtinfo5_6.3-2_amd64.deb && rm -f libtinfo5_6.3-2_amd64.deb
             wget https://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libncurses5_6.3-2_amd64.deb && sudo dpkg -i libncurses5_6.3-2_amd64.deb && rm -f libncurses5_6.3-2_amd64.deb
             DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
-              bc g++-multilib gcc-multilib gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev libyaml-dev \
+              bc g++-multilib gcc-multilib gperf imagemagick protobuf-compiler python3-protobuf lib32readline-dev lib32z1-dev libdw-dev libelf-dev \
               libgnutls28-dev libsdl1.2-dev libssl-dev libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc linux-modules-extra-$(uname -r)
 
         - name: "Set up zram"
@@ -131,7 +139,7 @@ jobs:
             fi
             repo sync -c -j8
 
-        - name: "Display remaining disk space"
+        - name: "Display remaining disk space (before build)"
           run: |
             df -h "$GITHUB_WORKSPACE/adrodsrc"
 
@@ -188,9 +196,35 @@ jobs:
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }}
 
+        - name: "Display remaining disk space (after build)"
+          run: |
+            df -h "$GITHUB_WORKSPACE/adrodsrc"
+
         - name: "Upload to GitHub Artifacts"
           if: ${{ github.event.inputs.artifact == 'true' }}
           uses: actions/upload-artifact@v7
           with:
-            name: "${{ github.event.inputs.product_name }}-${{github.run_id}}-artifacts"
+            name: ${{ github.event.inputs.product_name }}-${{github.run_id}}
             path: adrodsrc/out/target/product/${{ github.event.inputs.device_name }}/${{ github.event.inputs.artiname }}
+
+  publish:
+    name: Publish release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.artifact == 'true' && github.event.inputs.release == 'true' }}
+
+    steps:
+      - name: "Download artifacts"
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ github.event.inputs.product_name }}-${{github.run_id}}
+          path: adrodout
+
+      - name: "Create release (drafted)"
+        uses: softprops/action-gh-release@v3.0.3
+        with:
+          files: adrodout/*
+          tag_name: ${{ github.event.inputs.product_name }}-${{github.run_id}}
+          draft: true
+          prerelease: false
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.event.inputs.relrepo }}
