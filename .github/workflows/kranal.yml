@@ -38,9 +38,8 @@ jobs:
  
     - name: Set up dependencies
       run: |
-        sudo apt upgrade -y
-        sudo apt install -yq automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
-          libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev \
+        sudo apt install -yq automake flex lzop bison gperf zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 \
+          libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev make optipng maven libssl-dev \
           pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses-dev libx11-dev \
           lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler rename libelf-dev dwarves linux-modules-extra-$(uname -r)
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
