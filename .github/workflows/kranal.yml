@@ -67,7 +67,7 @@ jobs:
     - name: Download the kernel source code
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        git clone https://github.com/samsung-sm6225-dev/android_kernel_samsung_a05s -b android13-5.15 android-kernel --depth=1
+        git clone https://github.com/7jari/android_kernel_samsung_a05s -b android13-5.15 android-kernel --depth=1
 
     - name: Build kernel
       run: |
@@ -94,7 +94,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/modules
         mkdir staging
-        cp -t staging/ $(find -type f -name "*.ko")
+        find -type f -name "*.ko" -exec cp -t staging/ {} +
         cd staging
         rm zram.ko zsmalloc.ko || true
         tar -czf modules.tar.gz *.ko
@@ -130,7 +130,7 @@ jobs:
         prerelease: false
         working_directory: kernel_workspace
         token: ${{ secrets.PAT }}
-        repository: samsung-sm6225-dev/android_kernel_samsung_a05s
+        repository: 7jari/android_kernel_samsung_a05s
         files: |
           android-kernel/out/arch/arm64/boot/Image
           modules/staging/modules.tar.gz
