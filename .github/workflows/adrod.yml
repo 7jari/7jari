@@ -126,7 +126,7 @@ jobs:
             if [ -n "${{ github.event.inputs.local_branch }}" ]; then
             git clone --depth=1 ${{ github.event.inputs.local_manifest }} -b ${{ github.event.inputs.local_branch }} .repo/local_manifests
             else
-            curl --follow -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
+            curl -L -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
             fi
             [ -d "$PWD/.repo/local_manifests" ] || mkdir -p .repo/local_manifests
