@@ -71,7 +71,7 @@ jobs:
             DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
               7zip attr ccache clang ffmpeg gh \
               libbrotli-dev libbz2-dev libgtest-dev libprotobuf-dev libunwind-dev libpcre2-dev \
-              libzstd-dev linux-modules-extra-$(uname -r) lld protobuf-compiler webp openjdk-17-jdk
+              libzstd-dev linux-modules-$(uname -r) lld protobuf-compiler webp openjdk-17-jdk
             sudo modprobe erofs f2fs
 
         - name: "Clone forked repo"
