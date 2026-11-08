@@ -81,7 +81,7 @@ jobs:
             echo "ALLOW_MISSING_DEPENDENCIES=${{ github.event.inputs.missing }}" >> "$GITHUB_ENV"
             echo "BUILD_USERNAME=${{ github.actor }}" >> "$GITHUB_ENV"
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
-            ${{ github.event.inputs.microg }} && echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
+            if ${{ github.event.inputs.microg }}; then echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"; fi
 
         - name: "Free disk space"
           uses: rokibhasansagar/slimhub_actions@main
