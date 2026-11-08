@@ -81,7 +81,6 @@ jobs:
             echo "ALLOW_MISSING_DEPENDENCIES=${{ github.event.inputs.missing }}" >> "$GITHUB_ENV"
             echo "BUILD_USERNAME=${{ github.actor }}" >> "$GITHUB_ENV"
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
-            if ${{ github.event.inputs.microg }}; then echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"; fi
 
         - name: "Free disk space"
           uses: rokibhasansagar/slimhub_actions@main
@@ -131,6 +130,7 @@ jobs:
             fi
             [ -d "$PWD/.repo/local_manifests" ] || mkdir -p .repo/local_manifests
             if [ ${{ github.event.inputs.microg }} = true ]; then
+            echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
             git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
             fi
             git clone --depth=1 https://github.com/7jari/new_rbe_fix rbefix
