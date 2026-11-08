@@ -81,7 +81,7 @@ jobs:
             echo "ALLOW_MISSING_DEPENDENCIES=${{ github.event.inputs.missing }}" >> "$GITHUB_ENV"
             echo "BUILD_USERNAME=${{ github.actor }}" >> "$GITHUB_ENV"
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
-            echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
+            ${{ github.event.inputs.microg }} && echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
 
         - name: "Free disk space"
           uses: rokibhasansagar/slimhub_actions@main
@@ -154,7 +154,7 @@ jobs:
             patch -p1 < rbefix/patches/android-rbe-buildbuddyfix-defaults.patch
             fi
             export USE_RBE=true
-            export NINJA_REMOTE_NUM_JOBS=40
+            export NINJA_REMOTE_NUM_JOBS=48
             export RBE_use_unified_downloads=true
             export RBE_use_unified_uploads=true
             export RBE_R8_EXEC_STRATEGY=remote_local_fallback
