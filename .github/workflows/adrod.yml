@@ -30,7 +30,7 @@ on:
       build_command:
         description: 'Command to be used for compiling'
         required: true
-        default: 'mka bacon'
+        type: string
       build_type:
         description: 'Type of build'
         required: true
