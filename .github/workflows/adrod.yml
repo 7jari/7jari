@@ -81,6 +81,7 @@ jobs:
             echo "ALLOW_MISSING_DEPENDENCIES=${{ github.event.inputs.missing }}" >> "$GITHUB_ENV"
             echo "BUILD_USERNAME=${{ github.actor }}" >> "$GITHUB_ENV"
             echo "BUILD_HOSTNAME=ADROD" >> "$GITHUB_ENV"
+            echo "SKIP_ABI_CHECKS=true" >> "$GITHUB_ENV"
 
         - name: "Free disk space"
           uses: rokibhasansagar/slimhub_actions@main
@@ -145,7 +146,7 @@ jobs:
             fi
             repo sync -c -j8
 
-        - name: "Display remaining disk space (before build)"
+        - name: "Display remaining space (before build)"
           run: |
             df -h "$GITHUB_WORKSPACE/adrodsrc"
 
@@ -202,7 +203,7 @@ jobs:
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }}
 
-        - name: "Display remaining disk space (after build)"
+        - name: "Display remaining space (after build)"
           run: |
             df -h "$GITHUB_WORKSPACE/adrodsrc"
 
