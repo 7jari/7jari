@@ -136,13 +136,13 @@ jobs:
             curl -L -o .repo/local_manifests/local_manifest.xml ${{ github.event.inputs.local_manifest }} --create-dirs
             fi
             fi
-            [ -d "$PWD/.repo/local_manifests" ] || mkdir -p .repo/local_manifests
             if [ ${{ github.event.inputs.microg }} = true ]; then
             echo "WITH_GMS=${{ github.event.inputs.microg }}" >> "$GITHUB_ENV"
             git clone --depth=1 https://github.com/lineageos4microg/android_vendor_partner_gms.git -b master vendor/partner_gms
             fi
             git clone --depth=1 https://github.com/7jari/new_rbe_fix rbefix
             if [ ${{ github.event.inputs.rbe }} = true ]; then
+            [ -d "$PWD/.repo/local_manifests" ] || mkdir -p .repo/local_manifests
             cp rbefix/manifests/legacy-rbe.xml .repo/local_manifests/rbe.xml
             fi
             repo sync -c -j8
