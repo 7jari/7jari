@@ -204,7 +204,15 @@ jobs:
             lunch ${{ github.event.inputs.product_name }}-${{ github.event.inputs.build_type }}
             ${{ github.event.inputs.build_command }}
 
+        - name: "Display error.log (if build fails)"
+          if: ${{ failure() }}
+          run: |
+            echo "Displaying out/error.log"
+            echo "========================"
+            cat "$GITHUB_WORKSPACE/adrodsrc/out/error.log"
+
         - name: "Display remaining space (after build)"
+          if: ${{ always() }}
           run: |
             df -h "$GITHUB_WORKSPACE/adrodsrc"
 
