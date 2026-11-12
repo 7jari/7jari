@@ -210,9 +210,12 @@ jobs:
         - name: "Display error.log (if build fails)"
           if: ${{ failure() }}
           run: |
+            if [ -f "$GITHUB_WORKSPACE/adrodsrc/out/error.log" ]; then
             echo "Displaying out/error.log"
             echo "========================"
             cat "$GITHUB_WORKSPACE/adrodsrc/out/error.log"
+            else
+            echo "Build had timed out. Skipping"
 
         - name: "Display remaining space (after build)"
           if: ${{ always() }}
