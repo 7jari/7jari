@@ -106,7 +106,7 @@ jobs:
             sudo modprobe zram
             totalmem=$(LC_ALL=C free | grep -e "^Mem:" | sed -e 's/^Mem: *//' -e 's/  *.*//')
             mem=$((totalmem * 4 * 1024))
-            sleep 1
+            sleep 2
             sudo zramctl /dev/zram0 -s $mem -a lz4
             sudo mkswap /dev/zram0
             sudo swapon -p 100 /dev/zram0
@@ -152,6 +152,7 @@ jobs:
             df -h "$GITHUB_WORKSPACE/adrodsrc"
 
         - name: "Build adrod!"
+          id: build
           timeout-minutes: 330
           run: |
             cd ./adrodsrc
@@ -208,7 +209,7 @@ jobs:
             ${{ github.event.inputs.build_command }}
 
         - name: "Display error.log (if build fails)"
-          if: ${{ failure() }}
+          if: ${{ steps.build.outcome == failure() }}
           run: |
             if [ -f "$GITHUB_WORKSPACE/adrodsrc/out/error.log" ]; then
             echo "Displaying out/error.log"
@@ -216,11 +217,16 @@ jobs:
             cat "$GITHUB_WORKSPACE/adrodsrc/out/error.log"
             else
             echo "Build had timed out. Skipping"
+            fi
 
         - name: "Display remaining space (after build)"
           if: ${{ always() }}
           run: |
+            if [ -d "$GITHUB_WORKSPACE/adrodsrc" ]; then
             df -h "$GITHUB_WORKSPACE/adrodsrc"
+            else
+            echo "Adrod source not found. Skipping"
+            fi
 
         - name: "Upload to GitHub Artifacts"
           if: ${{ github.event.inputs.artifact == 'true' }}
